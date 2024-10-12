@@ -1,6 +1,6 @@
 import enum
 import random
-import constants.py as c
+from constants import *
 
 line_no = 0
 def read_network():
