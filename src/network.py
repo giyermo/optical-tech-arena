@@ -17,9 +17,9 @@ def read_network():
     kind = Kind.SIZE
     nodes = []
     edges_read = 0 #num de lineas de edges leídas
-    edges = []
+    edges: list[tuple] = []
     services_read = 0 #num de lineas de services leídas
-    services = []
+    services: list[tuple] = [] #Shouldn't we use a dict for this?
 
     while kind != Kind.END:
         # Set the network (graph) properties during iterations
@@ -84,7 +84,7 @@ def print_scenarios(scenarios):
 
 def read_scenarios():
     global line_no
-    scenarios_no = int(input())
+    scenarios_no = int(input()) # Input number scenarios:
     scenarios = []
     for _ in range(scenarios_no - 1):
         line_no += 1
