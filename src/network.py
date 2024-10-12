@@ -1,5 +1,6 @@
 import enum
 import random
+import constants.py as c
 
 line_no = 0
 def read_network():
@@ -61,11 +62,11 @@ def produce_scenarios(edges):
 
     Naive version, with random failures"""
 
-    scenarios_no = random.randint(1, 30)
+    scenarios_no = random.randint(1, 30) #Añadirlo a constantes
     scenarios = []
     for scenario in range(scenarios_no):
         scenario_edges = []
-        failures = random.randint(1, min(int(len(edges)/3), 60))
+        failures = random.randint(1, min(int(len(edges)/3), 60)) #Añadirlo a constantes
         for _ in range(failures):
             edge = random.randint(0, len(edges) - 1)
             if edge not in scenario_edges:
