@@ -46,3 +46,17 @@ NUM_SERVICES_INIT_RANGE = range(NUM_SERVICES_INIT_MIN, NUM_SERVICES_INIT_MAX + 1
 SERVICE_VALUE_MIN = 0
 SERVICE_VALUE_MAX = 100_000
 SERVICE_VALUE_RANGE = range(SERVICE_VALUE_MIN, SERVICE_VALUE_MAX + 1)
+
+"""
+////////////////////////////////////////////////////////////////////////////////////////////
+- Scenarios
+////////////////////////////////////////////////////////////////////////////////////////////
+"""
+# Number of failure
+# 0 <= T_1 <= 30
+T_1_MIN = 0
+T_1_MAX = 30
+# Failures
+# 0 <= T_1 <= 60
+T_2_MIN = 0
+T_2_MAX = 60
