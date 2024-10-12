@@ -62,11 +62,11 @@ def produce_scenarios(edges):
 
     Naive version, with random failures"""
 
-    scenarios_no = random.randint(1, 30) #Añadirlo a constantes
+    scenarios_no = random.randint(1, T_1_MAX) #Debería ser 0 en vez de 1?
     scenarios = []
     for scenario in range(scenarios_no):
         scenario_edges = []
-        failures = random.randint(1, min(int(len(edges)/3), 60)) #Añadirlo a constantes
+        failures = random.randint(1, min(int(len(edges)/3), T_2_MAX)) #Debería ser 0 en vez de 1?
         for _ in range(failures):
             edge = random.randint(0, len(edges) - 1)
             if edge not in scenario_edges:
