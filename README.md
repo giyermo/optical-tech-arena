@@ -23,3 +23,8 @@ A repository with the code to solve the agorize tech arena problem about optic s
 # **Caja de Dudas**
 
 -> si empleamos el network.py como el archivo que crea los grafos, no sería más comodo que los servicios fuesen un `dict` en vez de un `tuple` por legibilidad y sostenibilidad??? Supongo que en el uso de memoría habrá una gran diferencia, pero ns hasta que punto es notable
+
+# **Silly things to take into account**
+
+1. **Parallel edges**
+   Edges can be parallel, but not loops. So I am not sure if the approach of main.py with the edges can allow them
