@@ -14,7 +14,7 @@ Network input
 1 5 2 21 40 1 -> service (source, destination, number of edges, wavelength start, wavelength end, value)
 1 2 -> service (path)
 --------------------------
-Interaction
+Interaction part
 --------------------------
 3 -> number of scenarios
 1 -> failed edge

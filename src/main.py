@@ -3,7 +3,6 @@ from constants import *
 from network import Network
 from parser import parse_network
 from scenario_maker import produce_scenarios, print_scenarios
-from algorithm import solve_scenario
 
 # Parse the network
 nodes, edges, services = parse_network()
@@ -23,6 +22,6 @@ for _ in range(scenarios_no): # For each scenario
         for edge in edges: # Delete edges that fail
             scenario.delete_edge(edge)
 
-        solve_scenario(scenario, base_network)
+        scenario.solve_scenario(base_network)
         
         edges = [int(x) - 1 for x in input().split()] # set next batch of edges
