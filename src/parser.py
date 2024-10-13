@@ -29,7 +29,7 @@ def parse_network():
     kind = Kind.SIZE
     nodes = []
     edges_read = 0 #num de lineas de edges leídas
-    edges: list[tuple] = []
+    edges: list[list] = []
     services_read = 0 #num de lineas de services leídas
     services: list[tuple] = []
 
@@ -49,7 +49,9 @@ def parse_network():
             edges_read += 1
             if edges_read == edges_no:
                 kind = Kind.SERVICES_NO
-            edges.append(tuple(int(x) for x in l.split()))
+            edge = list(int(x) for x in l.split())
+            edge.append([])
+            edges.append(edge)
         elif kind == Kind.SERVICES_NO:
             #Set the number of services in the network
             kind = Kind.SERVICES
@@ -63,6 +65,7 @@ def parse_network():
             # Parse the service
             service_tuple = tuple(int(x) for x in l.split())
             service = {
+                'id': services_read,
                 'src': service_tuple[0],
                 'dst': service_tuple[1],
                 'num_edges': service_tuple[2],
@@ -74,6 +77,8 @@ def parse_network():
             # Parse the service edges
             l = input()
             service["path"] = tuple(int(x) for x in l.split())
+            for edge in service["path"]:
+                edges[edge - 1][-1].append(services_read)
 
             # Add the service to the network
             services.append((service))

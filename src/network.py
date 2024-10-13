@@ -18,17 +18,6 @@ class Network:
         """Delete an undirected edge between nodes u and v."""
         del self.edges[idx]
 
-    def add_service(self, src, dst, num_edges, wavelength_start, wavelength_end, value, edge_sequence):
-        """Add a service to the network with the given parameters."""
-        service = {
-            'src': src,
-            'dst': dst,
-            'num_edges': num_edges,
-            'wavelengths': (wavelength_start, wavelength_end),
-            'value': value,
-            'path': edge_sequence
-        }
-        self.services.append(service)
 
     def solve_scenario(self, base_network):
         print("0", flush=True)

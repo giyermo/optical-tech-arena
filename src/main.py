@@ -7,6 +7,7 @@ from scenario_maker import produce_scenarios, print_scenarios
 # Parse the network
 nodes, edges, services = parse_network()
 base_network = Network(nodes, edges, services)
+print(base_network.edges)
 
 scenarios = produce_scenarios(edges)
 print_scenarios(scenarios)
