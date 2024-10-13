@@ -6,8 +6,10 @@ class Network:
     def __init__(self, nodes: list, edges: list, services: list):
         self.nodes = nodes  # List of nodes
         self.edges = edges  # Adjacency list to store edges (graph representation)
-        self.services = services  # List to store service details
-
+        self.services: list[dict] = []  # List to store service details as dictionaries
+        for service in services:
+            self.add_service(service)
+        
     def add_edge(self, u, v):
         """Add an undirected edge between nodes u and v."""
         if u not in self.edges:
@@ -28,6 +30,10 @@ class Network:
             'path': edge_sequence
         }
         self.services.append(service)
+
+    def sort_services(self):
+        """We sort the list of services by the key 'value' in descending order"""
+        return sorted(self.services, key=lambda x: x['value'], reverse=True)
 
 line_no = 0
 def parse_network():
