@@ -3,7 +3,7 @@ import random
 from constants import *
 
 class Network:
-    def __init__(self, nodes, edges, services):
+    def __init__(self, nodes: list, edges: list, services: list):
         self.nodes = nodes  # List of nodes
         self.edges = edges  # Adjacency list to store edges (graph representation)
         self.services = services  # List to store service details
