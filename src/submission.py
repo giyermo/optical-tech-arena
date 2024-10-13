@@ -66,7 +66,17 @@ import random
 import copy
 
 class Network:
-    def __init__(self, nodes: list, edges: list, services: list):
+    def __init__(self, nodes: list, edges: dict, services: list):
+        """
+        Initialize the network with the given nodes, edges and services.
+
+        :param nodes: A list of nodes
+        :param edges: A dictionary of edges, where the keys are the edge indices
+            and the values are tuples of the connected nodes.
+        :param services: A list of services, where each service is a dictionary
+            with the keys 'src', 'dst', 'num_edges', 'wavelengths', 'value'
+            and 'path'. The 'path' key is a list of edge indices.
+        """
         self.nodes = nodes  # List of nodes
         self.edges = dict(enumerate(edges))  # Adjacency list to store edges (graph representation)
         self.services = services  # List to store service details
@@ -120,7 +130,7 @@ def parse_network():
     edges_read = 0 #num de lineas de edges leídas
     edges: list[tuple] = []
     services_read = 0 #num de lineas de services leídas
-    services: list[tuple] = [] #Shouldn't we use a dict for this?
+    services: list[tuple] = []
 
     while kind != Kind.END:
         # Set the network (graph) properties during iterations
@@ -204,13 +214,13 @@ def solve_scenario(scenario, base_network):
 # Parse the network
 nodes, edges, services = parse_network()
 base_network = Network(nodes, edges, services)
-print(base_network.edges)
 
 scenarios = produce_scenarios(edges)
 print_scenarios(scenarios)
 
 line_no+=1
-scenarios_no = int(input()) # Input number scenarios:
+scenarios_no = int(input()) # Number of scenarios provided by the environment
+
 for _ in range(scenarios_no): # For each scenario
     line_no+=1
     edges = [int(x) - 1 for x in input().split()] #parse edges that fail
@@ -220,10 +230,6 @@ for _ in range(scenarios_no): # For each scenario
         for edge in edges: # Delete edges that fail
             scenario.delete_edge(edge)
 
-        print(scenario.edges)
-
-
         solve_scenario(scenario, base_network)
         line_no+=1
         edges = [int(x) - 1 for x in input().split()] # set next batch of edges
-
