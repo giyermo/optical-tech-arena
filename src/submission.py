@@ -208,16 +208,22 @@ base_network = Network(nodes, edges, services)
 scenarios = produce_scenarios(edges)
 print_scenarios(scenarios)
 
+line_no+=1
 scenarios_no = int(input()) # Input number scenarios:
-line_no += 1
-for _ in range(scenarios_no - 1):
-    edges = [int(x) - 1 for x in input().split()]
-    print(line_no)
-    print("edges", edges)
-    if edges[0] == -2: break
-    while edges[0] != -1:
+for _ in range(scenarios_no):
+    line_no+=1
+    input_edges = input().split()
+    #print("input_edges", input_edges)
+    edges = [int(x) - 1 for x in input_edges]
+    #print("line", line_no)
+    while edges[0] != -2:
+        #print("edges", edges)
         scenario = read_scenario(base_network, edges)
         solve_scenario(scenario, base_network)
-        edges = [int(x) - 1 for x in input().split()]
+        line_no+=1
+        input_edges = input().split()
+        #print("input_edges", input_edges)
+        edges = [int(x) - 1 for x in input_edges]
+        #print("line", line_no)
 
-print("finished")
+#print("finished")
