@@ -68,7 +68,7 @@ import copy
 class Network:
     def __init__(self, nodes, edges, services):
         self.nodes = nodes  # List of nodes
-        self.edges = edges  # Adjacency list to store edges (graph representation)
+        self.edges = dict(enumerate(edges))  # Adjacency list to store edges (graph representation)
         self.services = services  # List to store service details
 
     def delete_edge(self, idx):
@@ -89,6 +89,22 @@ class Network:
 
 line_no = 0
 def parse_network():
+    """
+    Parse the input data for the graph and services.
+
+    It reads the input data from the standard input, parses it and returns the graph and services as a tuple.
+
+    The input data is divided into four parts: The size of the graph, the nodes, the edges and the services.
+    The size of the graph contains the number of nodes and edges.
+    The nodes are given as a list of channel conversion opportunities.
+    The edges are given as a list of pairs of nodes.
+    The services are given as a list of tuples, containing the source, destination, number of edges, wavelength start, wavelength end and value of the service.
+    The path of each service is given as a list of edges.
+
+    Returns:
+        tuple: A tuple containing the nodes, edges and services of the graph.
+    """
+
     class Kind(enum.Enum):
         #Como el input está dividido por partes, enum ayuda a dividirlo
         SIZE = 0
@@ -167,7 +183,7 @@ def produce_scenarios(edges):
         scenario_edges = []
         failures = 1#random.randint(1, min(int(len(edges)/3), T_2_MAX))
         for _ in range(failures):
-            edge = random.randint(0, len(edges) - 1)
+            edge = random.randint(0, len(edges)-1)
             if edge not in scenario_edges:
                 scenario_edges.append(edge)
         if scenario_edges not in scenarios:
@@ -181,21 +197,6 @@ def print_scenarios(scenarios):
         # Edges should be counted from 1
         print(*[edge + 1 for edge in scenario], flush=True)
 
-def read_scenario(base_network, edges):
-    global line_no
-
-    scenario = copy.deepcopy(base_network)
-    
-    line_no += 1
-
-    # if edges != len(edges):
-    #     raise ValueError("ERROR: Edges number mismatch")
-    
-    for edge in edges: 
-        scenario.delete_edge(edge)
-
-    return scenario
-
 
 def solve_scenario(scenario, base_network):
     print("0", flush=True)
@@ -203,27 +204,26 @@ def solve_scenario(scenario, base_network):
 # Parse the network
 nodes, edges, services = parse_network()
 base_network = Network(nodes, edges, services)
-
+print(base_network.edges)
 
 scenarios = produce_scenarios(edges)
 print_scenarios(scenarios)
 
 line_no+=1
 scenarios_no = int(input()) # Input number scenarios:
-for _ in range(scenarios_no):
+for _ in range(scenarios_no): # For each scenario
     line_no+=1
-    input_edges = input().split()
-    #print("input_edges", input_edges)
-    edges = [int(x) - 1 for x in input_edges]
-    #print("line", line_no)
+    edges = [int(x) - 1 for x in input().split()] #parse edges that fail
+    scenario = copy.deepcopy(base_network) # copy base network
+
     while edges[0] != -2:
-        #print("edges", edges)
-        scenario = read_scenario(base_network, edges)
+        for edge in edges: # Delete edges that fail
+            scenario.delete_edge(edge)
+
+        print(scenario.edges)
+
+
         solve_scenario(scenario, base_network)
         line_no+=1
-        input_edges = input().split()
-        #print("input_edges", input_edges)
-        edges = [int(x) - 1 for x in input_edges]
-        #print("line", line_no)
+        edges = [int(x) - 1 for x in input().split()] # set next batch of edges
 
-#print("finished")

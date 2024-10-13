@@ -16,13 +16,12 @@ Network input
 --------------------------
 Interaction
 --------------------------
-3
-1
-5
--1
-1
-2
--1
-1 3
--1
--2
+3 -> number of scenarios
+1 -> failed edge
+5 -> another failed edge
+-1 -> scenario end and new one starts (from base_network that doesn't have any failed edge)
+1 -> failed edge
+2 -> another failed edge
+-1 -> scenario end
+1 3 -> failed edges
+-1 -> scenario end
