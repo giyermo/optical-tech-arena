@@ -1,69 +1,7 @@
-"""
-Constans for the proyect
-
-All range constants are made like: [i, j] and not [i, j) as range() function performs.
-"""
-"""
-////////////////////////////////////////////////////////////////////////////////////////////
-- General
-////////////////////////////////////////////////////////////////////////////////////////////
-"""
-
-K = 40 # Optical wavelenghts
-
-
-"""
-////////////////////////////////////////////////////////////////////////////////////////////
-- Input
-////////////////////////////////////////////////////////////////////////////////////////////
-"""
-# 2 <= N <= 200
-N_BOUND_LOW = 2
-N_BOUND_UPP = 200
-N_BOUND_RANGE = range(N_BOUND_LOW, N_BOUND_UPP + 1)
-
-# 1 <= M <= 1000
-M_BOUND_LOW = 1
-M_BOUND_UPP = 1000
-M_BOUND_RANGE = range(M_BOUND_LOW, M_BOUND_UPP + 1)
-
-# Number of channel conversions opp
-# 0 <= P_i <= 20
-CHANNEL_CONV_OPP_LOWER_BOUND = 0
-CHANNEL_CONV_OPP_UPP_BOUND = 20
-CHANNEL_CONV_OPP_UPP_RANGE = range(CHANNEL_CONV_OPP_LOWER_BOUND, CHANNEL_CONV_OPP_UPP_BOUND + 1)
-
-# The number of services initially running on the graph
-# 1 <= J <= 5000
-
-NUM_SERVICES_INIT_MIN = 1
-NUM_SERVICES_INIT_MAX = 5000
-NUM_SERVICES_INIT_RANGE = range(NUM_SERVICES_INIT_MIN, NUM_SERVICES_INIT_MAX + 1)
-
-# Service value
-# 0 <= V <= 100.000
-
-SERVICE_VALUE_MIN = 0
-SERVICE_VALUE_MAX = 100_000
-SERVICE_VALUE_RANGE = range(SERVICE_VALUE_MIN, SERVICE_VALUE_MAX + 1)
-
-"""
-////////////////////////////////////////////////////////////////////////////////////////////
-- Scenarios
-////////////////////////////////////////////////////////////////////////////////////////////
-"""
-# Number of failure
-# 0 <= T_1 <= 30
-T_1_MIN = 0
-T_1_MAX = 30
-# Failures
-# 0 <= T_1 <= 60
-T_2_MIN = 0
-T_2_MAX = 60
-
+import copy
 import enum
 import random
-import copy
+
 
 class Network:
     def __init__(self, nodes: list, edges: dict, services: list):
@@ -85,19 +23,10 @@ class Network:
         """Delete an undirected edge between nodes u and v."""
         del self.edges[idx]
 
-    def add_service(self, src, dst, num_edges, wavelength_start, wavelength_end, value, edge_sequence):
-        """Add a service to the network with the given parameters."""
-        service = {
-            'src': src,
-            'dst': dst,
-            'num_edges': num_edges,
-            'wavelengths': (wavelength_start, wavelength_end),
-            'value': value,
-            'path': edge_sequence
-        }
-        self.services.append(service)
 
-line_no = 0
+    def solve_scenario(self, base_network):
+        print("0", flush=True)
+
 def parse_network():
     """
     Parse the input data for the graph and services.
@@ -124,17 +53,15 @@ def parse_network():
         SERVICES = 4
         END = 5
 
-    global line_no # Para contar las lineas del input que se pasan
     kind = Kind.SIZE
     nodes = []
     edges_read = 0 #num de lineas de edges leídas
-    edges: list[tuple] = []
+    edges: list[list] = []
     services_read = 0 #num de lineas de services leídas
     services: list[tuple] = []
 
     while kind != Kind.END:
         # Set the network (graph) properties during iterations
-        line_no += 1 # Add a read line
         l = input()
         if kind == Kind.SIZE:
             #Set the size of the network (graph)
@@ -149,7 +76,9 @@ def parse_network():
             edges_read += 1
             if edges_read == edges_no:
                 kind = Kind.SERVICES_NO
-            edges.append(tuple(int(x) for x in l.split()))
+            edge = list(int(x) for x in l.split())
+            edge.append([])
+            edges.append(edge)
         elif kind == Kind.SERVICES_NO:
             #Set the number of services in the network
             kind = Kind.SERVICES
@@ -163,6 +92,7 @@ def parse_network():
             # Parse the service
             service_tuple = tuple(int(x) for x in l.split())
             service = {
+                'id': services_read,
                 'src': service_tuple[0],
                 'dst': service_tuple[1],
                 'num_edges': service_tuple[2],
@@ -172,21 +102,32 @@ def parse_network():
             }
 
             # Parse the service edges
-            line_no += 1 # Add a read line(he añadido esto, que antes no estaba, para q no cuente menos líneas)
             l = input()
             service["path"] = tuple(int(x) for x in l.split())
+            for edge in service["path"]:
+                edges[edge - 1][-1].append(services_read)
 
             # Add the service to the network
             services.append((service))
 
     return nodes, edges, services
 
-
 def produce_scenarios(edges):
-    """Produce failure scenarios
+    """
+    Produce failure scenarios
 
-    Naive version, with random failures"""
+    Naive version, with random failures
 
+    Parameters
+    ----------
+    edges : list
+        List of edges of the graph
+
+    Returns
+    -------
+    list
+        List of lists of edges that fail in each scenario
+    """
     scenarios_no = 1# random.randint(1, T_1_MAX)
     scenarios = []
     for scenario in range(scenarios_no):
@@ -200,16 +141,20 @@ def produce_scenarios(edges):
             scenarios.append(scenario_edges)
     return scenarios
 
-def print_scenarios(scenarios):
+def print_scenarios(scenarios:list):
+    """
+    Print failure scenarios to the standard output
+
+    The first line contains the number of failure scenarios.
+    The following lines describe each scenario, with the first number being
+    the number of edges that fail, and the following numbers the indices of
+    the edges that fail, counted from 1.
+    """
     print(len(scenarios), flush=True)
     for scenario in scenarios:
         print(len(scenario), flush=True)
         # Edges should be counted from 1
         print(*[edge + 1 for edge in scenario], flush=True)
-
-
-def solve_scenario(scenario, base_network):
-    print("0", flush=True)
 
 # Parse the network
 nodes, edges, services = parse_network()
@@ -218,11 +163,10 @@ base_network = Network(nodes, edges, services)
 scenarios = produce_scenarios(edges)
 print_scenarios(scenarios)
 
-line_no+=1
 scenarios_no = int(input()) # Number of scenarios provided by the environment
 
 for _ in range(scenarios_no): # For each scenario
-    line_no+=1
+    
     edges = [int(x) - 1 for x in input().split()] #parse edges that fail
     scenario = copy.deepcopy(base_network) # copy base network
 
@@ -230,6 +174,6 @@ for _ in range(scenarios_no): # For each scenario
         for edge in edges: # Delete edges that fail
             scenario.delete_edge(edge)
 
-        solve_scenario(scenario, base_network)
-        line_no+=1
+        scenario.solve_scenario(base_network)
+        
         edges = [int(x) - 1 for x in input().split()] # set next batch of edges

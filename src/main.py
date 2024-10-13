@@ -1,13 +1,12 @@
 import copy
 from constants import *
-from network import Network
-from parser import parse_network
-from scenario_maker import produce_scenarios, print_scenarios
+from network import *
+from parser import *
+from scenario_maker import *
 
 # Parse the network
 nodes, edges, services = parse_network()
 base_network = Network(nodes, edges, services)
-print(base_network.edges)
 
 scenarios = produce_scenarios(edges)
 print_scenarios(scenarios)
