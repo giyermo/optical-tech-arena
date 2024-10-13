@@ -155,7 +155,7 @@ def produce_scenarios(edges):
     scenarios = []
     for scenario in range(scenarios_no):
         scenario_edges = []
-        failures = random.randint(1, min(int(len(edges)/3), T_2_MAX))
+        failures = 1#random.randint(1, min(int(len(edges)/3), T_2_MAX))
         for _ in range(failures):
             edge = random.randint(0, len(edges) - 1)
             if edge not in scenario_edges:
@@ -165,11 +165,11 @@ def produce_scenarios(edges):
     return scenarios
 
 def print_scenarios(scenarios):
-    print(len(scenarios))
+    print(len(scenarios), flush=True)
     for scenario in scenarios:
-        print(len(scenario))
+        print(len(scenario), flush=True)
         # Edges should be counted from 1
-        print(*[edge + 1 for edge in scenario])
+        print(*[edge + 1 for edge in scenario], flush=True)
 
 def read_scenarios():
     global line_no
@@ -188,12 +188,12 @@ def read_scenarios():
 
 nodes, edges, services = parse_network()
 base_network = Network(nodes, edges, services)
-print("Nodes:", base_network.nodes)
-print("Edges:", base_network.edges)
-print("Services:", base_network.services)
+# print("Nodes:", base_network.nodes)
+# print("Edges:", base_network.edges)
+# print("Services:", base_network.services)
 scenarios = produce_scenarios(edges)
-print("Scenarios:")
+# print("Scenarios:")
 print_scenarios(scenarios)
-print("-------------------")
+# print("-------------------")
 scenarios = read_scenarios()
-print(scenarios)
+# print(scenarios)
