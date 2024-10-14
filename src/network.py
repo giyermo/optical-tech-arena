@@ -65,7 +65,7 @@ class Network:
                 wavlength_range = range(service["wavelengths"][0], service["wavelengths"][1] + 1)
                 self.edges[edge]["wavelengths"].extend(wavlength_range)
 
-    def delete_edge(self, idx):
+    def deactivate_edge(self, idx):
         """Delete an undirected edge between nodes u and v."""
         self.edges[idx]["active"] = False
 
@@ -128,14 +128,8 @@ class Network:
         #Assuming my proposition on self.services
         broken_services = [] #Aassuming a segregation of the services that fail
         for serv in broken_services:
-            edge_nodes = self.failure_edge_nodes(serv) # Get the nodes os the broken edge
-            if not edge_nodes:
-                print('Error: failure in the detecting failed services system the service ',serv,' should be damaged')
-                continue # No failed edge found
-            else:
-                start_node, end_node = edge_nodes # Unpack the edges from the tuple
             new_serv = copy.deepcopy(serv)
             #As the edge is deleted find the sortest path
-            new_path = self.dijkstra(start_node,end_node) # Search the shortest path between the nodes of the damaged edge
+            new_path = self.dijkstra(serv['src'],serv['dst'])
             """ESTO NO SE PUEDE PQ DEVUELVE NODOS Y NO LOS INDICES DE LAS ARISTAS :("""
             new_serv['path'] = new_path

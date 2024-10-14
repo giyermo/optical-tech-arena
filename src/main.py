@@ -19,7 +19,7 @@ for _ in range(scenarios_no): # For each scenario
 
     while edges[0] != -2:
         for edge in edges: # Delete edges that fail
-            scenario.delete_edge(edge)
+            scenario.deactivate_edge(edge)
 
         scenario.solve_scenario(base_network)
         
