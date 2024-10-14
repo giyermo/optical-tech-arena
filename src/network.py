@@ -27,10 +27,32 @@ class Network:
                 "active": True
             }
             v1, v2 = edge_dict["vertices"]
-            if v1 not in self.nodes[v2]["adjacent"]:
-                self.nodes[v2]["adjacent"].append(v1)
-            if v2 not in self.nodes[v1]["adjacent"]:
-                self.nodes[v1]["adjacent"].append(v2)
+
+            matching_tuples = [tup for tup in self.nodes[v1]["adjacent"] if tup[0] == v2]
+            if matching_tuples:
+                if any(tup[1] == idx+1 for tup in matching_tuples):
+                    # The vertex is in the list and the edge matches
+                    pass
+                else:
+                    # The vertex is in the list but the edge doesn't match
+                    self.nodes[v1]["adjacent"].append((v2, idx+1))
+            else:
+                # The vertex is not in the list
+                self.nodes[v1]["adjacent"].append((v2, idx+1))
+
+            matching_tuples = [tup for tup in self.nodes[v2]["adjacent"] if tup[0] == v1]
+            if matching_tuples:
+                if any(tup[1] == idx+1 for tup in matching_tuples):
+                    # The vertex is in the list and the edge matches
+                    pass
+                else:
+                    # The vertex is in the list but the edge doesn't match
+                    self.nodes[v2]["adjacent"].append((v1, idx+1))
+            else:
+                # The vertex is not in the list
+                self.nodes[v2]["adjacent"].append((v1, idx+1))
+
+ 
             edges[idx] = edge_dict
         self.edges = dict(enumerate(edges, 1))  # Adjacency list to store edges (graph representation)
 
