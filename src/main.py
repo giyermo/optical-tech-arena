@@ -17,10 +17,13 @@ for _ in range(scenarios_no): # For each scenario
     edges = [int(x) for x in input().split()] #parse edges that fail
     scenario = copy.deepcopy(base_network) # copy base network
 
-    while edges[0] != -2:
+    while edges[0] != -1:
         for edge in edges: # Delete edges that fail
             scenario.deactivate_edge(edge)
+            if scenario.edges[edge]["services"] != []:
+                for service in scenario.edges[edge]["services"]:
+                    scenario.deactivate_service(service-1)
 
         scenario.solve_scenario(base_network)
         
-        edges = [int(x) - 1 for x in input().split()] # set next batch of edges
+        edges = [int(x) for x in input().split()] # set next batch of edges
