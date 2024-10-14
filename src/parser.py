@@ -71,7 +71,8 @@ def parse_network():
                 'num_edges': service_tuple[2],
                 'wavelengths': (service_tuple[3], service_tuple[4]),
                 'value': service_tuple[5],
-                'path': None
+                'path': None,
+                'active': True
             }
 
             # Parse the service edges

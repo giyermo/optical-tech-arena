@@ -15,7 +15,7 @@ scenarios_no = int(input()) # Number of scenarios provided by the environment
 
 for _ in range(scenarios_no): # For each scenario
     
-    edges = [int(x) - 1 for x in input().split()] #parse edges that fail
+    edges = [int(x) for x in input().split()] #parse edges that fail
     scenario = copy.deepcopy(base_network) # copy base network
 
     while edges[0] != -2:

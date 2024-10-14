@@ -11,18 +11,38 @@ class Network:
             and 'path'. The 'path' key is a list of edge indices.
         """
         self.nodes = nodes  # List of nodes
-        self.edges = dict(enumerate(edges))  # Adjacency list to store edges (graph representation)
+        for idx, edge in enumerate(edges):
+            edge_dict = {
+                "vertices": edge[:2],
+                "services": edge[-1],
+                "wavelengths": [],
+                "active": True
+            }
+            edges[idx] = edge_dict
+        self.edges = dict(enumerate(edges, 1))  # Adjacency list to store edges (graph representation)
         self.services = services  # List to store service details
 
     def delete_edge(self, idx):
         """Delete an undirected edge between nodes u and v."""
-        del self.edges[idx]
+        self.edges[idx]["active"] = False
+        print("deleted edge:", self.edges[idx])
 
 
     def solve_scenario(self, base_network):
         print("0", flush=True)
 
     def dijkstra(self, start_node, end_node) -> list:
+        """
+        Dijkstra's algorithm to find the shortest path between two nodes in a graph.
+
+        Args:
+            start_node: The node where the path starts.
+            end_node: The node where the path ends.
+
+        Returns:
+            A list of nodes representing the shortest path from start_node to end_node.
+            If no path is found, it returns None, which should be an error as the graph should be connected.
+        """
         distances = {node: float('inf') for node in self.nodes} #Init all nodes in a dict with infinty distance
         distances[start_node] = 0
         priority_queue = [(0, start_node)]
@@ -42,7 +62,7 @@ class Network:
             if current_distance > distances[current_node]:
                 continue
 
-            for neighbor in self.edges[current_node]:"""EL COMO FUNCIONA SELF.EDGES NO HACE Q VAYA COMO DEBERIA :("""
+            for neighbor in self.edges[current_node]:
                 distance = current_distance + 1 # The weight of an edge is 1
                 if distance < distances[neighbor]:
                         distances[neighbor] = distance
