@@ -1,0 +1,41 @@
+Network input
+--------------------------
+10 17 -> vertices, edges
+1 1 1 1 1 1 1 1 1 1 -> channel conversion oportunity for each vertex
+1 2 -> connection for edge 1
+1 3 -> connection for edge 2
+1 8 -> connection for edge 3
+2 4 -> connection for edge 4
+2 5 -> connection for edge 5 
+2 6 -> connection for edge 6
+3 6 -> connection for edge 7
+3 7 -> connection for edge 8
+4 8 -> connection for edge 9
+4 10 -> connection for edge 10
+5 8 -> connection for edge 11
+6 9 -> connection for edge 12
+7 9 -> connection for edge 13
+8 9 -> connection for edge 14
+8 10 -> connection for edge 15
+9 10 -> connection for edge 16
+1 2 -> connection for edge 17
+4 -> number of optical services
+1 10 4 1 20 1 -> service (source, destination, number of edges, wavelength start, wavelength end, value)
+2 8 13 16 -> service (path)
+1 10 4 21 40 1 -> service (source, destination, number of edges, wavelength start, wavelength end, value)
+2 8 13 16 -> service (path)
+2 10 4 1 10 1 -> service (source, destination, number of edges, wavelength start, wavelength end, value)
+1 5 11 15 -> service (path)
+1 8 3 11 20 1 -> service (source, destination, number of edges, wavelength start, wavelength end, value)
+1 4 9 -> service (path)
+--------------------------
+Interaction part
+--------------------------
+3 -> number of scenarios
+1 -> failed edge
+5 -> another failed edge
+-1 -> scenario end and new one starts (from base_network that doesn't have any failed edge)
+16 -> failed edge
+-1 -> scenario end
+11 10 -> failed edges
+-1 -> scenario end

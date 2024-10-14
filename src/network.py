@@ -2,7 +2,7 @@ import heapq
 import copy
 
 class Network:
-    def __init__(self, nodes: list, edges: dict, services: list):
+    def __init__(self, nodes: list, edges: list, services: list):
         """
         Initialize the network with the given nodes, edges and services.
 
