@@ -1,3 +1,6 @@
+import heapq
+import copy
+
 class Network:
     def __init__(self, nodes: list, edges: dict, services: list):
         """
@@ -100,14 +103,18 @@ class Network:
                 return path[::-1] # Reversed, then it will be from start to end
             if current_distance > distances[current_node]:
                 continue
-
-            for neighbor in self.edges[current_node]:
+            
+            # Neighbors are the adjacents nodes that are connected with an active edge
+            """Theretically when an edge fails and it's deleted, should be checked if the neighbour
+                is still adjacent"""
+            #neighbors = [node for node in self.nodes[current_node]["adjacent"]]
+            for neighbor in self.nodes[current_node]["adjacent"]:
                 distance = current_distance + 1 # The weight of an edge is 1
                 if distance < distances[neighbor]:
                         distances[neighbor] = distance
                         predecessors[neighbor] = current_node
                         heapq.heappush(priority_queue, (distance, neighbor)) #push the queue
-        return None #No path is found, which should be an error as the graph should be connected        
+        return None #No path is found, which should be an error as the graph should be connected      
     
     def solve_scenatio_hmg_beta_1(self):
         #i'll assume the algorythm is executed after a failure occurs in a node
