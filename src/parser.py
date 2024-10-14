@@ -43,7 +43,7 @@ def parse_network():
         elif kind == Kind.NODES:
             #Set the list of nodes
             kind = Kind.EDGES # Move to edges
-            nodes.append(tuple(int(x) for x in l.split()))
+            nodes = list(int(x) for x in l.split())
         elif kind == Kind.EDGES:
             # For each iteration, add a edge to the network (graph)
             edges_read += 1

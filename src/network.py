@@ -10,7 +10,15 @@ class Network:
             with the keys 'src', 'dst', 'num_edges', 'wavelengths', 'value'
             and 'path'. The 'path' key is a list of edge indices.
         """
-        self.nodes = nodes  # List of nodes
+
+        for idx, node in enumerate(nodes):
+            node_dict = {
+                "oportunities": node,
+                "adjacent": [],
+            }
+            nodes[idx] = node_dict
+        self.nodes = dict(enumerate(nodes, 1))  # List of nodes
+
         for idx, edge in enumerate(edges):
             edge_dict = {
                 "vertices": edge[:2],
@@ -18,8 +26,14 @@ class Network:
                 "wavelengths": [],
                 "active": True
             }
+            v1, v2 = edge_dict["vertices"]
+            if v1 not in self.nodes[v2]["adjacent"]:
+                self.nodes[v2]["adjacent"].append(v1)
+            if v2 not in self.nodes[v1]["adjacent"]:
+                self.nodes[v1]["adjacent"].append(v2)
             edges[idx] = edge_dict
         self.edges = dict(enumerate(edges, 1))  # Adjacency list to store edges (graph representation)
+
         self.services = services  # List to store service details
         for service in self.services:
             for edge in service["path"]:
