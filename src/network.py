@@ -59,5 +59,5 @@ class Network:
             new_serv = copy.deepcopy(serv)
             #As the edge is deleted find the sortest path
             new_path = self.dijkstra(serv['src'],serv['dst'])
-            """ESTO NO SE PUEDE PQ DEVUELVE NODOS Y NO LOS INDICES DE VERTICES :("""
+            """ESTO NO SE PUEDE PQ DEVUELVE NODOS Y NO LOS INDICES DE LAS ARISTAS :("""
             new_serv['path'] = new_path
