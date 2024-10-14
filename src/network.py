@@ -21,11 +21,14 @@ class Network:
             edges[idx] = edge_dict
         self.edges = dict(enumerate(edges, 1))  # Adjacency list to store edges (graph representation)
         self.services = services  # List to store service details
+        for service in self.services:
+            for edge in service["path"]:
+                wavlength_range = range(service["wavelengths"][0], service["wavelengths"][1] + 1)
+                self.edges[edge]["wavelengths"].extend(wavlength_range)
 
     def delete_edge(self, idx):
         """Delete an undirected edge between nodes u and v."""
         self.edges[idx]["active"] = False
-        print("deleted edge:", self.edges[idx])
 
 
     def solve_scenario(self, base_network):
