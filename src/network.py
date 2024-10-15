@@ -83,6 +83,13 @@ class Network:
     def solve_scenario(self, base_network):
         print("0", flush=True)
 
+    def min_dist_path(self, start_node, end_node):
+        """
+        Find the shortest path between two nodes in a graph using Guillermo's algorithm.
+        """
+        s_adj = self.nodes[start_node]["adjacent"]
+        e_adj = self.nodes[end_node]["adjacent"]
+
     def dijkstra(self, start_node, end_node) -> list:
         """
         Dijkstra's algorithm to find the shortest path between two nodes in a graph.
