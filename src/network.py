@@ -69,8 +69,15 @@ class Network:
         """Delete an undirected edge between nodes u and v."""
         self.edges[idx]["active"] = False
         v1, v2 = self.edges[idx]["vertices"]
+        print("deleting edge", idx, v1, v2)
         self.nodes[v1]["adjacent"] = [tup for tup in self.nodes[v1]["adjacent"] if tup[1] != idx]
         self.nodes[v2]["adjacent"] = [tup for tup in self.nodes[v2]["adjacent"] if tup[1] != idx]
+        # matching_tuple = next(tup for tup in self.nodes[v1]["adjacent"] if tup[1] == idx)
+        # print("tuple1", matching_tuple, v1)
+        # self.nodes[v1]["adjacent"].remove(matching_tuple)
+        # matching_tuple = next(tup for tup in self.nodes[v2]["adjacent"] if tup[1] == idx)
+        # print("tuple2", matching_tuple, v2)
+        # self.nodes[v2]["adjacent"].remove(matching_tuple)
 
     def deactivate_service(self, idx):
         """Delete an undirected edge between nodes u and v."""
