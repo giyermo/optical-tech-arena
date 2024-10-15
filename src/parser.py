@@ -27,7 +27,7 @@ def parse_network():
         END = 5
 
     kind = Kind.SIZE
-    nodes = []
+    nodes = [] 
     edges_read = 0 #num de lineas de edges leídas
     edges: list[list] = []
     services_read = 0 #num de lineas de services leídas
@@ -41,7 +41,7 @@ def parse_network():
             kind = Kind.NODES # Move to nodes
             nodes_no, edges_no = [int(x) for x in l.split()]
         elif kind == Kind.NODES:
-            #Set the list of nodes
+            #Set the list of nodes and it's channel conversion oportunities
             kind = Kind.EDGES # Move to edges
             nodes = list(int(x) for x in l.split())
         elif kind == Kind.EDGES:

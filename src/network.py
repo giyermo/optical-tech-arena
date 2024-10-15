@@ -76,14 +76,14 @@ class Network:
     def failure_edge_nodes(self, service: dict):
         """If there's a failure in the service's path return the nodes of the failed edge, otherwise None"""
         for edge_idx in service['path']: # Check all the nodes edges of the path
-            current_edge = self.edges[edge_idx]
+            current_edge = self.edges[edge_idx - 1] #As the index starts in 1 -> index - 1 to start in 0
             if not current_edge['active']: #Check the edge is not active
                 return current_edge['vertices'] # Return the edge's nodes
     
     def solve_scenario(self, base_network):
         print("0", flush=True)
 
-    def dijkstra(self, start_node, end_node) -> list:
+    def dijkstra(self, start_node, end_node) -> tuple:
         """
         Dijkstra's algorithm to find the shortest path between two nodes in a graph.
 
@@ -110,7 +110,7 @@ class Network:
                 while current_node is not None:
                     path.append(current_node)
                     current_node = predecessors[current_node] 
-                return path[::-1] # Reversed, then it will be from start to end
+                return tuple(path[::-1]) # Reversed, then it will be from start to end
             if current_distance > distances[current_node]:
                 continue
             
@@ -126,6 +126,24 @@ class Network:
                         heapq.heappush(priority_queue, (distance, neighbor)) #push the queue
         return None #No path is found, which should be an error as the graph should be connected      
     
+    def path_nodes_to_edges(self, path: tuple) -> tuple:
+        """
+        Convert a tuple of nodes path to a edge path
+        """
+        new_path = []
+        for i in range(len(path) - 1):
+            current, next = path[i], path[i+1]
+            i = 0
+            while edge[0] == next: # and widthwave free:
+                edge =  self.nodes[current]["adjacent"][i] #index of the (v,idx_edge)
+                i += 1
+                if i > len(self.nodes[current]["adjacent"]): #If no edge is found then the path is incorrect
+                    raise IndexError(f'There is no path between: {current} and {next}')
+            new_path.append(self.edges[edge[1]]) #append the edge from the index
+
+        return tuple(new_path)
+
+
     def solve_scenatio_hmg_beta_1(self):
         #i'll assume the algorythm is executed after a failure occurs in a node
         self.sort_services(self.services)
@@ -138,8 +156,10 @@ class Network:
                 continue # No failed edge found
             else:
                 start_node, end_node = edge_nodes # Unpack the edges from the tuple
+
             new_serv = copy.deepcopy(serv)
             #As the edge is deleted find the sortest path
             new_path = self.dijkstra(start_node,end_node) # Search the shortest path between the nodes of the damaged edge
-            """ESTO NO SE PUEDE PQ DEVUELVE NODOS Y NO LOS INDICES DE LAS ARISTAS :("""
+            #This path is given by nodes, then it has to be converted to edges.
+            new_path = self.path_nodes_to_edges(new_path)
             new_serv['path'] = new_path
