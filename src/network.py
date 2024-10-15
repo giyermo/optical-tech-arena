@@ -84,8 +84,9 @@ class Network:
         self.services[idx]["active"] = False
 
     def set_service_dead(self, idx):
-        """Kill an undirected edge between nodes u and v."""
-        self.services[idx]["dead"] = True
+        """Kill a service."""
+        if not self.services[idx]["active"]:
+            self.services[idx]["dead"] = True
 
     def failure_edge_nodes(self, service: dict):
         """If there's a failure in the service's path return the nodes of the failed edge, otherwise None"""
@@ -167,10 +168,9 @@ class Network:
 
     def solve_scenatio_hmg_beta_1(self):
         #i'll assume the algorythm is executed after a failure occurs in a node
-        self.sort_services(self.services)
-        #Assuming my proposition on self.services
-        broken_services = [] #Aassuming a segregation of the services that fail
-        for serv in broken_services:
+        #self.sort_services(self.services)
+        inactive_services = [service for service in self.services if not service['active']]
+        for serv in inactive_services:
             edge_nodes = self.failure_edge_nodes(serv) # Get the nodes os the broken edge
             if not edge_nodes:
                 print('Error: failure in the detecting failed services system the service ',serv,' should be damaged')
