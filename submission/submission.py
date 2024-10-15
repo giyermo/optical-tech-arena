@@ -241,6 +241,15 @@ class Network:
             current_edge = self.edges[edge_idx - 1] #As the index starts in 1 -> index - 1 to start in 0
             if not current_edge['active']: #Check the edge is not active
                 return current_edge['vertices'] # Return the edge's nodes
+            
+    def check_free_bandwidth(edge: dict, bw: tuple) -> bool:
+        """
+        If the bandwidth 'collides' with the occupied wavelenghts of the edge returns False, and viceversa.
+        """
+        for edge_bw in edge['wavelenghts']:
+            if not (bw[1] < edge_bw[0] or bw[0] > edge_bw[1]):
+                return False    
+        return True
     
     def solve_scenario(self, base_network):
         print("0", flush=True)
@@ -335,8 +344,18 @@ class Network:
         return None
 
 
+        
 
-    def dijkstra(self, start_node, end_node) -> list:
+    def search_adjacent_edges(self, node, next, bandwidth):
+        """
+        Returns a reacheable edge
+        """
+        for edge in self.nodes[node]['adjacent']:
+            if edge[0] == next:
+                if self.check_free_bandwidth(self.edges[edge[1]], bandwidth):
+                    return edge    
+
+    def dijkstra(self, start_node, end_node, band_width: tuple) -> list:
         """
         Dijkstra's algorithm to find the shortest path between two nodes in a graph.
 
@@ -351,70 +370,62 @@ class Network:
         distances = {node: float('inf') for node in self.nodes} #Init all nodes in a dict with infinty distance
         distances[start_node] = 0
         priority_queue = [(0, start_node)]
-        # A SLinked list would be better
-        predecessors = {node: None for node in self.nodes} # The value is just the next key, so you assure the path
+
+        # A SLinked list would fit better
+        predecessors = [node for node in self.nodes] # The value is just the next key, so you assure the path
 
         while priority_queue:
             current_distance, current_node = heapq.heappop(priority_queue) #pop the queue
 
-            if current_node == end_node: #reached end node
+            if current_node == end_node: #reached END NODE
                 #Found end_node and create the path list
                 path = []
                 while current_node is not None:
                     path.append(current_node)
-                    current_node = predecessors[current_node] 
+                    prev_node, edge = predecessors[current_node]  # Obtener nodo anterior y arista
+                    if edge:  # If the edge exists it's appended
+                        path.append(edge)
+
+                    current_node = prev_node
                 return tuple(path[::-1]) # Reversed, then it will be from start to end
+            
             if current_distance > distances[current_node]:
                 continue
             
             # Neighbors are the adjacents nodes that are connected with an active edge
-            """Theretically when an edge fails and it's deleted, should be checked if the neighbour
-                is still adjacent"""
-            #neighbors = [node for node in self.nodes[current_node]["adjacent"]]
-            for neighbor in self.nodes[current_node]["adjacent"]:
+            # Check neighbors via edges
+            accesible = [] # idx 0: node, idx 1: vertex that connect node with prev
+            neighbors = [node for node in self.nodes[current_node]["adjacent"]]
+            for next in neighbors:
+                acc_edge = self.search_adjacent_edges(current_distance, next, band_width)
+                if acc_edge: # The edge exists and not None
+                    accesible.append(next, acc_edge)
+            
+            for neig_node in accesible[0]:
                 distance = current_distance + 1 # The weight of an edge is 1
-                if distance < distances[neighbor]:
-                        distances[neighbor] = distance
-                        predecessors[neighbor] = current_node
-                        heapq.heappush(priority_queue, (distance, neighbor)) #push the queue
+                if distance < distances[neig_node]:
+                        distances[neig_node] = distance
+                        predecessors[neig_node] = (accesible[1],current_node) # Save the edge for the path
+                        heapq.heappush(priority_queue, (distance, neig_node)) #push the queue
         return None #No path is found, which should be an error as the graph should be connected      
-    
-    def path_nodes_to_edges(self, path: tuple) -> tuple:
-        """
-        Convert a tuple of nodes path to a edge path
-        """
-        new_path = []
-        for i in range(len(path) - 1):
-            current, next = path[i], path[i+1]
-            i = 0
-            while edge[0] == next: # and widthwave free:
-                edge =  self.nodes[current]["adjacent"][i] #index of the (v,idx_edge)
-                i += 1
-                if i > len(self.nodes[current]["adjacent"]): #If no edge is found then the path is incorrect
-                    raise IndexError(f'There is no path between: {current} and {next}')
-            new_path.append(self.edges[edge[1]]) #append the edge from the index
-
-        return tuple(new_path)
-
-
-    def solve_scenatio_hmg_beta_1(self):
+        
+        
+    def solve_scenatio_hmg_beta_1(self, serv):
         #i'll assume the algorythm is executed after a failure occurs in a node
         #self.sort_services(self.services)
-        inactive_services = [service for service in self.services if not service['active']]
-        for serv in inactive_services:
-            edge_nodes = self.failure_edge_nodes(serv) # Get the nodes os the broken edge
-            if not edge_nodes:
-                print('Error: failure in the detecting failed services system the service ',serv,' should be damaged')
-                continue # No failed edge found
-            else:
-                start_node, end_node = edge_nodes # Unpack the edges from the tuple
+        #not used inactive_services = [service for service in self.services if not service['active']]
+        #sorted(inactive_services, key=lambda x: x['value'], reverse=True) #sort the values by its value
+        start_node, end_node = self.failure_edge_nodes(serv) # Get the nodes of the broken edge
 
-            new_serv = copy.deepcopy(serv)
-            #As the edge is deleted find the sortest path
-            new_path = self.dijkstra(start_node,end_node) # Search the shortest path between the nodes of the damaged edge
-            #This path is given by nodes, then it has to be converted to edges.
-            new_path = self.path_nodes_to_edges(new_path)
+        new_serv = copy.deepcopy(serv)
+        #As the edge is deleted find the sortest path
+        new_path = self.dijkstra(start_node,end_node) # Search the shortest path between the nodes of the damaged edge
+        if new_path:
             new_serv['path'] = new_path
+            serv = new_serv
+        else:
+            serv['dead'] = True
+        return serv
 
 
 def produce_scenarios(edges):
@@ -486,7 +497,9 @@ for _ in range(scenarios_no):
                     broken_serv.add(service)
                 scenario.deactivate_service(service-1)
 
-        for idx in list(broken_serv):
+            """
+            #Guille's aproach
+            for idx in list(broken_serv):
             service = scenario.services[idx-1]
             if not service["dead"]:
                 redirect = scenario.redirect_broken_service(service)
@@ -496,6 +509,22 @@ for _ in range(scenarios_no):
                 else:
                     broken_serv.add(idx)
                     fixed_serv.discard(idx)
+            """
+            #Héctor's aproach
+            list(broken_serv)
+            sorted(broken_serv, key=lambda x: x['value'], reverse=True) #sort the values by its value
+            for idx in list(broken_serv):
+                service = scenario.services[idx-1]
+                if not service["dead"]:
+                    redirect = scenario.solve_scenatio_hmg_beta_1(service)
+                    if redirect:
+                        fixed_serv.add(idx)
+                        broken_serv.remove(idx)
+                    else:
+                        broken_serv.add(idx)
+                        fixed_serv.discard(idx)
+
+
 
         print(len(fixed_serv), flush=True)
 
