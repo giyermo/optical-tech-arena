@@ -218,7 +218,7 @@ class Network:
         priority_queue = [(0, start_node)]
 
         # A SLinked list would fit better
-        predecessors = [] # The value is just the next key, so you assure the path
+        predecessors = [node for node in self.nodes] # The value is just the next key, so you assure the path
 
         while priority_queue:
             current_distance, current_node = heapq.heappop(priority_queue) #pop the queue
@@ -228,7 +228,11 @@ class Network:
                 path = []
                 while current_node is not None:
                     path.append(current_node)
-                    current_node = predecessors[current_node] 
+                    prev_node, edge = predecessors[current_node]  # Obtener nodo anterior y arista
+                    if edge:  # If the edge exists it's appended
+                        path.append(edge)
+
+                    current_node = prev_node
                 return tuple(path[::-1]) # Reversed, then it will be from start to end
             
             if current_distance > distances[current_node]:
@@ -247,7 +251,7 @@ class Network:
                 distance = current_distance + 1 # The weight of an edge is 1
                 if distance < distances[neig_node]:
                         distances[neig_node] = distance
-                        predecessors[neig_node] = accesible[1] # Save the edge for the path
+                        predecessors[neig_node] = (accesible[1],current_node) # Save the edge for the path
                         heapq.heappush(priority_queue, (distance, neig_node)) #push the queue
         return None #No path is found, which should be an error as the graph should be connected      
         
