@@ -14,6 +14,7 @@ print_scenarios(scenarios)
 scenarios_no = int(input()) # Number of scenarios provided by the environment
 
 for _ in range(scenarios_no): # For each scenario
+    print("--------------------------------")
     edges = [int(x) for x in input().split()] #parse edges that fail
     scenario = copy.deepcopy(base_network) # copy base network
     broken_serv = []
@@ -28,8 +29,10 @@ for _ in range(scenarios_no): # For each scenario
                         broken_serv.append(service)
                     scenario.deactivate_service(service)
 
+        print("broken services: ", broken_serv)
 
         for idx in broken_serv:
+            print("redirecting service: ", idx)
             service = scenario.services[idx-1]
             if service["dead"] == False:
                 redirect = scenario.redirect_broken_service(service)
@@ -45,6 +48,7 @@ for _ in range(scenarios_no): # For each scenario
                         broken_serv.remove(idx)
         
         print(len(fixed_serv), flush=True)
+        print("fixed_serv: ", fixed_serv)
 
         for service in fixed_serv:
             print(service, len(scenario.services[service-1]["path"]), flush=True)
@@ -57,6 +61,7 @@ for _ in range(scenarios_no): # For each scenario
                 output.extend([edge, start, end])
             print(*output, flush=True)
 
+        print("broken_serv: ", broken_serv)
 
         broken_serv = []
         fixed_serv = []
