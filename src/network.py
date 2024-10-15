@@ -74,7 +74,7 @@ class Network:
 
     def deactivate_service(self, idx):
         """Delete an undirected edge between nodes u and v."""
-        self.services[idx]["active"] = False
+        self.services[idx-1]["active"] = False
 
     def set_service_dead(self, idx):
         """Kill a service."""
@@ -100,48 +100,94 @@ class Network:
     def solve_scenario(self, base_network):
         print("0", flush=True)
 
-
-    def min_dist_path(self, start_node, end_node):
-        """
-        Find the shortest path between two nodes in a graph using flood algorithm.
-        Returns both node path and edge path, ensuring edges have no wavelengths.
-        """
-        visited = set()
-        queue = [(start_node, [], [])]
+    # def min_dist_path1(self, start_node, end_node):
+    #     """
+    #     Find the shortest path between two nodes in a graph using flood algorithm.
+    #     Returns both node path and edge path, ensuring edges have no wavelengths.
+    #     """
+    #     visited = set()
+    #     queue = [(start_node, [], [])]
         
-        # Forward search to find the end node
+    #     # Forward search to find the end node
+    #     while queue:
+    #         current_node, node_path, edge_path = queue.pop(0)
+    #         if current_node == end_node:
+    #             visited.add(current_node)
+    #             break
+            
+    #         if current_node not in visited:
+    #             visited.add(current_node)
+    #             for neighbor, edge_id in self.nodes[current_node]["adjacent"]:
+    #                 if neighbor not in visited and not self.edges[edge_id]["wavelengths"]:
+    #                     new_node_path = node_path + [current_node]
+    #                     new_edge_path = edge_path + [edge_id]
+    #                     queue.append((neighbor, new_node_path, new_edge_path))
+        
+    #     # If end_node not found, return None
+    #     if end_node not in visited:
+    #         return None, None
+        
+    #     # Reverse search starting from end_node
+    #     reverse_node_path = [end_node]
+    #     reverse_edge_path = []
+    #     current_node = end_node
+        
+    #     while current_node != start_node:
+    #         for neighbor, edge_id in self.nodes[current_node]["adjacent"]:
+    #             if neighbor in visited and neighbor not in reverse_node_path and not self.edges[edge_id]["wavelengths"]:
+    #                 reverse_node_path.append(neighbor)
+    #                 reverse_edge_path.append(edge_id)
+    #                 current_node = neighbor
+    #                 break
+        
+    #     return list(reversed(reverse_node_path)), list(reversed(reverse_edge_path))
+
+    def min_dist_path(self, start_node, end_node, service):
+        visited = set()
+        queue = [(start_node, [start_node], [])]
+        
         while queue:
             current_node, node_path, edge_path = queue.pop(0)
-            if current_node == end_node:
-                visited.add(current_node)
-                break
             
-            if current_node not in visited:
-                visited.add(current_node)
-                for neighbor, edge_id in self.nodes[current_node]["adjacent"]:
-                    if neighbor not in visited and not self.edges[edge_id]["wavelengths"]:
-                        new_node_path = node_path + [current_node]
+            if current_node == end_node:
+                return node_path, edge_path
+            
+            for neighbor, edge_id in self.nodes[current_node]["adjacent"]:
+                if neighbor not in visited and self.edges[edge_id]["active"]:
+                    edge_wavelengths = set(self.edges[edge_id]["wavelengths"])
+                    service_wavelengths = set(range(service["wavelengths"][0], service["wavelengths"][1] + 1))
+                    
+                    if not service_wavelengths.intersection(edge_wavelengths):
+                        new_node_path = node_path + [neighbor]
                         new_edge_path = edge_path + [edge_id]
                         queue.append((neighbor, new_node_path, new_edge_path))
+                        visited.add(neighbor)
         
-        # If end_node not found, return None
-        if end_node not in visited:
-            return None, None
-        
-        # Reverse search starting from end_node
-        reverse_node_path = [end_node]
-        reverse_edge_path = []
-        current_node = end_node
-        
-        while current_node != start_node:
-            for neighbor, edge_id in self.nodes[current_node]["adjacent"]:
-                if neighbor in visited and neighbor not in reverse_node_path and not self.edges[edge_id]["wavelengths"]:
-                    reverse_node_path.append(neighbor)
-                    reverse_edge_path.append(edge_id)
-                    current_node = neighbor
-                    break
-        
-        return list(reversed(reverse_node_path)), list(reversed(reverse_edge_path))
+        return None
+    
+
+    def redirect_broken_service(self, service):
+        #print("\nRedirecting broken service", service["path"])
+        start_node = service['src']
+        end_node = service['dst']
+        result = self.min_dist_path(start_node, end_node, service)
+
+        if result:
+            for edge in service["path"]:
+                self.edges[edge]["services"].remove(service["id"])
+                self.edges[edge]["wavelengths"] = list(set(self.edges[edge]["wavelengths"])-set(service["wavelengths"]))
+            new_node_path, new_edge_path = result
+            service['path'] = new_edge_path
+            if new_edge_path:
+                for edge_id in new_edge_path:
+                    service_wavelengths = set(range(service["wavelengths"][0], service["wavelengths"][1] + 1))
+                    self.edges[edge_id]["wavelengths"].extend(service_wavelengths)
+            service['active'] = True
+            service["path"] = new_edge_path
+            return new_node_path, new_edge_path
+
+        service["dead"] = True
+        return None
 
 
         
