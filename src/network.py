@@ -83,6 +83,10 @@ class Network:
         """Delete an undirected edge between nodes u and v."""
         self.services[idx]["active"] = False
 
+    def set_service_dead(self, idx):
+        """Kill an undirected edge between nodes u and v."""
+        self.services[idx]["dead"] = True
+
     def failure_edge_nodes(self, service: dict):
         """If there's a failure in the service's path return the nodes of the failed edge, otherwise None"""
         for edge_idx in service['path']: # Check all the nodes edges of the path
