@@ -9,13 +9,11 @@ base_network = Network(nodes, edges, services)
 
 scenarios = produce_scenarios(edges)
 print_scenarios(scenarios)
-print(base_network.nodes)
 
 
 scenarios_no = int(input()) # Number of scenarios provided by the environment
 
 for _ in range(scenarios_no): # For each scenario
-    print("-------------------------------------------")
     
     edges = [int(x) for x in input().split()] #parse edges that fail
     scenario = copy.deepcopy(base_network) # copy base network
@@ -27,8 +25,7 @@ for _ in range(scenarios_no): # For each scenario
                 for service in scenario.edges[edge]["services"]:
                     scenario.deactivate_service(service-1)
 
-        print(base_network.nodes)
-
+        print(scenario.min_dist_path(1, 5))
         scenario.solve_scenario(base_network)
         
         edges = [int(x) for x in input().split()] # set next batch of edges
