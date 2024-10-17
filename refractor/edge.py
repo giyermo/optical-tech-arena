@@ -41,30 +41,3 @@ class Edge:
         return (f"Edge(id={self.id}, nodes={self.nodes}, "
                 f"services={self.services}, active={self.active})")
 
-# # Create an edge
-# edge1 = Edge(id=1, node1=1, node2=2)
-
-# # Add services to the edge with their wavelength ranges
-# edge1.add_service(service_id=101, wavelength_range=(10, 20))
-# edge1.add_service(service_id=102, wavelength_range=(15, 25))
-
-# # Display the edge state
-# print("Edge state after adding services:")
-# print(edge1)
-
-# # Remove a service
-# edge1.remove_service(service_id=101)
-
-# # Display the edge state after removal
-# print("\nEdge state after removing service 101:")
-# print(edge1)
-
-# # Deactivate the edge
-# deactivated_services = edge1.deactivate()
-
-# # Display the edge state after deactivation
-# print("\nEdge state after deactivation:")
-# print(edge1)
-
-# # List of deactivated services
-# print("\nDeactivated services:", deactivated_services)

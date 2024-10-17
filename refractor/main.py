@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 from service import Service
 from scenario_parser import *
 from scenario_maker import *
@@ -8,8 +9,13 @@ import copy
 nodes, edges, services = parse_network()
 base_network = Network(nodes, edges, services)
 
-scenarios = produce_scenarios(edges)
-print_scenarios(scenarios)
+# scenarios = produce_scenarios(edges)
+# print_scenarios(scenarios)
+
+print("1", flush=True)
+print("1", flush=True)
+print("1", flush=True)
+
 
 n_scenarios = int(input())
 
@@ -27,7 +33,7 @@ for _ in range(n_scenarios):
         else:
             edges_ids = [int(x) for x in line.split()]
 
-            redirected_services, scenario = process_scenario(scenario, edges_ids[:1])
+            redirected_services, scenario = process_scenario(scenario, edges_ids)
 
             print(len(redirected_services), flush=True)
             for service in redirected_services:

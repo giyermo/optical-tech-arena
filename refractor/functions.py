@@ -22,7 +22,7 @@ def process_scenario(network, edge_ids):
             raise ValueError(f"Error: {e}")
 
     # After processing all edges, attempt to redirect the deactivated services
-    for service_id in deactivated_services[:1]:
+    for service_id in deactivated_services:
         service = network.services.get(service_id)
         # Check if the service is not dead and not active
         if service and not service.dead and not service.active:  
@@ -31,6 +31,10 @@ def process_scenario(network, edge_ids):
             if redirection:  # Redirect the service
                 network.remove_service_from_edges(service_id)  # Remove the service from edges
                 network.services[service_id].path = redirection
+                wavelength = network.services[service_id].wavelengths[0]
+                for edge in redirection:
+                    network.edges[edge].services[service_id] = wavelength
+                network.services[service_id].wavelengths = [wavelength]*len(redirection)  # Mark service as active
                 redirected_services.append(service_id)  # Add to redirected list
             else:
                 service.mark_as_dead()  # Mark service as dead if redirection fails
