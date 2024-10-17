@@ -47,56 +47,224 @@ with __stickytape_temporary_dir() as __stickytape_working_dir:
     nodes, edges, services = parse_network()
     base_network = Network(nodes, edges, services)
     
-    scenarios = produce_scenarios(edges)
-    print_scenarios(scenarios)
-    
-    
-    scenarios_no = int(input()) # Number of scenarios provided by the environment
-    
-    for _ in range(scenarios_no): # For each scenario
-        edges = [int(x) for x in input().split()] #parse edges that fail
-        scenario = copy.deepcopy(base_network) # copy base network
-        broken_serv = []
-        fixed_serv = []
-    
-        while edges[0] != -1:
-            for edge in edges: # Delete edges that fail
-                scenario.deactivate_edge(edge)
-                if scenario.edges[edge]["services"] != []:
-                    for service in scenario.edges[edge]["services"]:
-                        if scenario.services[service-1]["dead"] == False:   
-                            broken_serv.append(service)
-                        scenario.deactivate_service(service)
-    
-            broken_serv_copy = broken_serv.copy()
-    
-            for idx in broken_serv_copy:
+
+    def redirect_broken_service(self, service):
+        #print("\nRedirecting broken service", service["path"])
+        start_node = service['src']
+        end_node = service['dst']
+        result = self.min_dist_path(start_node, end_node, service)
+
+        if result:
+            for edge in service["path"]:
+                self.edges[edge]["services"].remove(service["id"])
+                self.edges[edge]["wavelengths"] = list(set(self.edges[edge]["wavelengths"])-set(service["wavelengths"]))
+            new_node_path, new_edge_path = result
+            service['path'] = new_edge_path
+            if new_edge_path:
+                for edge_id in new_edge_path:
+                    service_wavelengths = set(range(service["wavelengths"][0], service["wavelengths"][1] + 1))
+                    self.edges[edge_id]["wavelengths"].extend(service_wavelengths)
+            service['active'] = True
+            service["path"] = new_edge_path
+            return new_node_path, new_edge_path
+
+        service["dead"] = True
+        return None
+
+
+        
+
+    def search_adjacent_edges(self, node, next, bandwidth):
+        """
+        Returns a reacheable edge
+        """
+        for edge in self.nodes[node]['adjacent']:
+            if edge[0] == next:
+                if self.check_free_bandwidth(self.edges[edge[1]], bandwidth):
+                    return edge    
+
+    def dijkstra(self, start_node, end_node, band_width: tuple) -> list:
+        """
+        Dijkstra's algorithm to find the shortest path between two nodes in a graph.
+
+        Args:
+            start_node: The node where the path starts.
+            end_node: The node where the path ends.
+
+        Returns:
+            A list of nodes representing the shortest path from start_node to end_node.
+            If no path is found, it returns None, which should be an error as the graph should be connected.
+        """
+        distances = {node: float('inf') for node in self.nodes} #Init all nodes in a dict with infinty distance
+        distances[start_node] = 0
+        priority_queue = [(0, start_node)]
+
+        # A SLinked list would fit better
+        predecessors = [node for node in self.nodes] # The value is just the next key, so you assure the path
+
+        while priority_queue:
+            current_distance, current_node = heapq.heappop(priority_queue) #pop the queue
+
+            if current_node == end_node: #reached END NODE
+                #Found end_node and create the path list
+                path = []
+                while current_node is not None:
+                    path.append(current_node)
+                    prev_node, edge = predecessors[current_node]  # Obtener nodo anterior y arista
+                    if edge:  # If the edge exists it's appended
+                        path.append(edge)
+
+                    current_node = prev_node
+                return tuple(path[::-1]) # Reversed, then it will be from start to end
+            
+            if current_distance > distances[current_node]:
+                continue
+            
+            # Neighbors are the adjacents nodes that are connected with an active edge
+            # Check neighbors via edges
+            accesible = [] # idx 0: node, idx 1: vertex that connect node with prev
+            neighbors = [node for node in self.nodes[current_node]["adjacent"]]
+            for next in neighbors:
+                acc_edge = self.search_adjacent_edges(current_distance, next, band_width)
+                if acc_edge: # The edge exists and not None
+                    accesible.append(next, acc_edge)
+            
+            for neig_node in accesible[0]:
+                distance = current_distance + 1 # The weight of an edge is 1
+                if distance < distances[neig_node]:
+                        distances[neig_node] = distance
+                        predecessors[neig_node] = (accesible[1],current_node) # Save the edge for the path
+                        heapq.heappush(priority_queue, (distance, neig_node)) #push the queue
+        return None #No path is found, which should be an error as the graph should be connected      
+        
+        
+    def solve_scenatio_hmg_beta_1(self, serv):
+        #i'll assume the algorythm is executed after a failure occurs in a node
+        #self.sort_services(self.services)
+        #not used inactive_services = [service for service in self.services if not service['active']]
+        #sorted(inactive_services, key=lambda x: x['value'], reverse=True) #sort the values by its value
+        start_node, end_node = self.failure_edge_nodes(serv) # Get the nodes of the broken edge
+
+        new_serv = copy.deepcopy(serv)
+        #As the edge is deleted find the sortest path
+        new_path = self.dijkstra(start_node,end_node) # Search the shortest path between the nodes of the damaged edge
+        if new_path:
+            new_serv['path'] = new_path
+            serv = new_serv
+        else:
+            serv['dead'] = True
+        return serv
+
+
+def produce_scenarios(edges):
+    """
+    Produce failure scenarios
+
+    Naive version, with random failures
+
+    Parameters
+    ----------
+    edges : list
+        List of edges of the graph
+
+    Returns
+    -------
+    list
+        List of lists of edges that fail in each scenario
+    """
+    scenarios_no = 1# random.randint(1, T_1_MAX)
+    scenarios = []
+    for scenario in range(scenarios_no):
+        scenario_edges = []
+        failures = 1#random.randint(1, min(int(len(edges)/3), T_2_MAX))
+        for _ in range(failures):
+            edge = random.randint(0, len(edges)-1)
+            if edge not in scenario_edges:
+                scenario_edges.append(edge)
+        if scenario_edges not in scenarios:
+            scenarios.append(scenario_edges)
+    return scenarios
+
+def print_scenarios(scenarios:list):
+    """
+    Print failure scenarios to the standard output
+
+    The first line contains the number of failure scenarios.
+    The following lines describe each scenario, with the first number being
+    the number of edges that fail, and the following numbers the indices of
+    the edges that fail, counted from 1.
+    """
+    print(len(scenarios), flush=True)
+    for scenario in scenarios:
+        print(len(scenario), flush=True)
+        # Edges should be counted from 1
+        print(*[edge + 1 for edge in scenario], flush=True)
+
+
+# Parse the network
+nodes, edges, services = parse_network()
+base_network = Network(nodes, edges, services)
+
+scenarios = produce_scenarios(edges)
+print_scenarios(scenarios)
+
+
+scenarios_no = int(input()) # Number of scenarios provided by the environment
+
+for _ in range(scenarios_no):
+    edges = [int(x) for x in input().split()]
+    scenario = copy.deepcopy(base_network)
+    broken_serv = set()
+    fixed_serv = set()
+
+    while edges[0] != -1:
+        for edge in edges:
+            scenario.deactivate_edge(edge)
+            for service in scenario.edges[edge]["services"]:
+                if not scenario.services[service-1]["dead"]:
+                    broken_serv.add(service)
+                scenario.deactivate_service(service-1)
+
+            """
+            #Guille's aproach
+            for idx in list(broken_serv):
+            service = scenario.services[idx-1]
+            if not service["dead"]:
+                redirect = scenario.redirect_broken_service(service)
+                if redirect:
+                    fixed_serv.add(idx)
+                    broken_serv.remove(idx)
+                else:
+                    broken_serv.add(idx)
+                    fixed_serv.discard(idx)
+            """
+            #Héctor's aproach
+            list(broken_serv)
+            sorted(broken_serv, key=lambda x: x['value'], reverse=True) #sort the values by its value
+            for idx in list(broken_serv):
                 service = scenario.services[idx-1]
-                if service["dead"] == False:
-                    redirect = scenario.redirect_broken_service(service)
-                    if redirect == None:
-                        if idx not in broken_serv:
-                            broken_serv.append(idx)
-                        if idx in fixed_serv:
-                            fixed_serv.remove(idx)
+                if not service["dead"]:
+                    redirect = scenario.solve_scenatio_hmg_beta_1(service)
+                    if redirect:
+                        fixed_serv.add(idx)
+                        broken_serv.remove(idx)
                     else:
-                        if idx not in fixed_serv:
-                            fixed_serv.append(idx)
-                        if idx in broken_serv:
-                            broken_serv.remove(idx)
-    
-            for service in fixed_serv:
-                print(service, len(scenario.services[service-1]["path"]), flush=True)
-    
-                output = []
-    
-                for edge in scenario.services[service-1]["path"]:
-                    start = scenario.services[service-1]["wavelengths"][0]
-                    end = scenario.services[service-1]["wavelengths"][1]
-                    output.extend([edge, start, end])
-                print(*output, flush=True)
-    
-            broken_serv = []
-            fixed_serv = []
-    
-            edges = [int(x) for x in input().split()] # set next batch of edges
+                        broken_serv.add(idx)
+                        fixed_serv.discard(idx)
+
+
+
+        print(len(fixed_serv), flush=True)
+
+        for service in fixed_serv:
+            print(service, len(scenario.services[service-1]["path"]), flush=True)
+            output = []
+            for edge in scenario.services[service-1]["path"]:
+                start, end = scenario.services[service-1]["wavelengths"]
+                output.extend([edge, start, end])
+            print(*output, flush=True)
+
+        broken_serv.clear()
+        fixed_serv.clear()
+
+        edges = [int(x) for x in input().split()]
